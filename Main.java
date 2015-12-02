@@ -45,7 +45,8 @@ public class Main {
     //static double ballDirection = Math.PI;   //heading left
 
     static Timer timer;    //Ticks every *gameSpeed* milliseconds. Every time it ticks, the ball and computer paddle move
-
+    static int playerScore = 0; //Added playerScore
+    static int compScore = 0;
     static GameDisplay gamePanel;   //draw the game components here
     
     static boolean gameOver;      //Used to work out what message, if any, to display on the screen
@@ -60,27 +61,45 @@ public class Main {
             //System.out.println("* Repaint *");
 
             if (gameOver == true) {
-                g.drawString( "Game over!", 20, 30 );
+                g.drawString( "Game over! Press e to restart", 20, 30 );
+                g.drawString("You player Score is: "+ playerScore,20,45);
+                g.drawString("You player Score is: "+ compScore,20,60);
                 return;
             }
 
+//            if (removeInstructions == false ) {
+//                g.drawString("Pong! Press up or down to move", 20, 30);
+//                g.drawString("Press q to quit", 20, 60);
+//
+//            }
+            makeBall(g);
+            makeWords(g);
+            //Interesting fact: if this setColor is commented out, the game pulls from the next one available.
+            g.setColor(Color.blue);
+            //Computer paddle
+            g.drawLine(paddleDistanceFromSide, computerPaddleY - paddleSize, paddleDistanceFromSide, computerPaddleY + paddleSize);
+            //Human paddle
+            g.drawLine(screenSize - paddleDistanceFromSide, humanPaddleY - paddleSize, screenSize - paddleDistanceFromSide, humanPaddleY + paddleSize);
+
+        }
+        public void makeWords(Graphics g){
+            g.setColor(Color.red);
             if (removeInstructions == false ) {
                 g.drawString("Pong! Press up or down to move", 20, 30);
                 g.drawString("Press q to quit", 20, 60);
-            }
 
-            g.setColor(Color.blue);
+            }
+        }
+        public void makeBall(Graphics g){
+            g.setColor(Color.GREEN);
+            g.fillOval((int) ballX, (int) ballY, ballSize, ballSize);
 
             //While game is playing, these methods draw the ball, paddles, using the global variables
             //Other parts of the code will modify these variables
 
             //Ball - a circle is just an oval with the height equal to the width
-            g.drawOval((int)ballX, (int)ballY, ballSize, ballSize);
+            g.drawOval((int) ballX, (int) ballY, ballSize, ballSize);
             //Computer paddle
-            g.drawLine(paddleDistanceFromSide, computerPaddleY - paddleSize, paddleDistanceFromSide, computerPaddleY + paddleSize);
-            //Human paddle
-            g.drawLine(screenSize - paddleDistanceFromSide, humanPaddleY - paddleSize, screenSize - paddleDistanceFromSide, humanPaddleY + paddleSize);
-            
         }
     }
 
@@ -91,8 +110,19 @@ public class Main {
         public void keyTyped(KeyEvent ev) {
             char keyPressed = ev.getKeyChar();
             char q = 'q';
+            char e = 'e';
             if( keyPressed == q){
                 System.exit(0);    //quit if user presses the q key.
+            }
+            if(keyPressed == e){ //Restart button
+                //Only restarts game if point is scored.
+                if(gameOver) {
+                    ballX = screenSize / 2;
+                    ballY = screenSize / 2;
+                    timer.start();
+                    gameOver = false;
+                }
+
             }
         }
         
@@ -194,10 +224,10 @@ public class Main {
         System.out.println("computer paddle speed = " + computerPaddleSpeed);
 
         if (ballPaddleDifference > 0 ) {   //Difference is positive - paddle is below ball on screen
-            computerPaddleY -= distanceToMove;
+//            computerPaddleY -= distanceToMove;
 
         } else if (ballPaddleDifference < 0){
-            computerPaddleY += distanceToMove;
+//            computerPaddleY += distanceToMove;
 
         } else {
             //Ball and paddle are aligned. Don't need to move!
@@ -221,8 +251,14 @@ public class Main {
         boolean hitHumanPaddle = false;
         boolean hitComputerPaddle = false;
 
-        if (ballX <= 0 || ballX >= screenSize ) {
+        if (ballX <= 0) {
             gameOver = true;
+            playerScore +=1;
+            return;
+        } //changed to two seperate if statements to determine who scored.
+        if(ballX >= screenSize ){
+            gameOver = true;
+            compScore +=1;
             return;
         }
         if (ballY <= 0 || ballY >= screenSize-ballSize) {
